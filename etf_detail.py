@@ -10,6 +10,8 @@ CANDS = {
     "B. 12개월 상위3": lambda i: E.target_f1(i, A, E.MOM["12개월"], 3, False),
     "C. 12개월 상위3 +절대필터": lambda i: E.target_f1(i, A, E.MOM["12개월"], 3, True),
 }
+if p == "fin":            # 최종 구간은 사전에 정한 후보 B, C만 연다
+    CANDS = {k: v for k, v in CANDS.items() if not k.startswith("A.")}
 B = E.benchmarks(a, b); B = {k: v for k, v in B.items() if not k.startswith("확장")}
 B["나스닥100 ETF 보유(참고)"] = E.RET["133690"].loc[a:b]
 yr = lambda r: (1 + r).groupby(r.index.year).prod() - 1
