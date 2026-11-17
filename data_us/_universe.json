@@ -1,0 +1,61 @@
+{
+ "지수": [
+  "^GSPC",
+  "^NDX",
+  "^RUT",
+  "^VIX"
+ ],
+ "시장 ETF": [
+  "SPY",
+  "QQQ",
+  "IWM",
+  "DIA",
+  "VTI",
+  "MDY"
+ ],
+ "섹터 ETF": [
+  "XLK",
+  "XLF",
+  "XLE",
+  "XLV",
+  "XLI",
+  "XLY",
+  "XLP",
+  "XLU",
+  "XLB",
+  "XLRE",
+  "XLC",
+  "SMH",
+  "XBI",
+  "ITB",
+  "KRE"
+ ],
+ "스타일 ETF": [
+  "MTUM",
+  "QUAL",
+  "VLUE",
+  "USMV",
+  "VUG",
+  "VTV"
+ ],
+ "해외 ETF": [
+  "EFA",
+  "EEM",
+  "EWJ",
+  "EWY",
+  "FXI",
+  "INDA"
+ ],
+ "채권·대체 ETF": [
+  "TLT",
+  "IEF",
+  "SHY",
+  "LQD",
+  "HYG",
+  "GLD",
+  "SLV",
+  "USO",
+  "VNQ",
+  "DBC"
+ ]
+}
