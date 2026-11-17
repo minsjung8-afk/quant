@@ -1,0 +1,35 @@
+name: us-data
+
+on:
+  push:
+    branches: [us-data]
+    paths: ["fetch_us.py", ".github/workflows/us.yml"]
+  schedule:
+    - cron: "43 22 * * 1-5"   # 한국시간 화~토 07:43 — 미국장 마감 후
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: us-data
+  cancel-in-progress: false
+
+jobs:
+  us:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: 미국 ETF·지수
+        run: python3 fetch_us.py
+      - name: 저장소에 반영
+        if: always()
+        run: |
+          git config user.name "quant-bot"
+          git config user.email "quant-bot@users.noreply.github.com"
+          git add data_us 2>/dev/null || true
+          if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
+          git commit -q -m "data: 미국 ETF·지수 $(date -u +%Y-%m-%d)"
+          git pull -q --rebase origin "${GITHUB_REF_NAME}" || true
+          git push origin "HEAD:${GITHUB_REF_NAME}"
