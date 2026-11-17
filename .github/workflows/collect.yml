@@ -38,4 +38,5 @@ jobs:
           git add raw_krx data_index 2>/dev/null || true
           if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
           git commit -q -m "data: $(date -u +%Y-%m-%d) 수집분"
-          git push
+          git pull -q --rebase origin "${GITHUB_REF_NAME}" || true
+          git push origin "HEAD:${GITHUB_REF_NAME}"

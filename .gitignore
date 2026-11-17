@@ -6,3 +6,4 @@ panel/
 debug_*
 config.json
 .env
+results_*.csv
