@@ -1,0 +1,41 @@
+name: collect
+
+on:
+  schedule:
+    - cron: "17 22 * * 1-5"   # 한국시간 화~토 07:17 — 전 거래일 확정 시세 수집 (kosdaq-db 06:00 작업 이후)
+  workflow_dispatch:
+    inputs:
+      max:
+        description: "이번 실행의 KRX 최대 호출 수 (일일 한도 10,000회를 kosdaq-db와 공유)"
+        default: "7500"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - name: KRX 전 종목 일봉
+        env:
+          KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
+        run: python3 fetch_krx.py --max "${{ github.event.inputs.max || '2500' }}"
+      - name: 벤치마크 지수
+        if: always()
+        continue-on-error: true
+        run: python3 fetch_index.py
+      - name: 저장소에 반영
+        if: always()
+        run: |
+          git config user.name "quant-bot"
+          git config user.email "quant-bot@users.noreply.github.com"
+          git add raw_krx data_index 2>/dev/null || true
+          if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
+          git commit -q -m "data: $(date -u +%Y-%m-%d) 수집분"
+          git push

@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+data_kr/
+results/
+panel/
+debug_*
+config.json
+.env
