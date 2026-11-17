@@ -18,7 +18,7 @@ def load():
     return d
 
 
-def universe(d, min_val=1e9, min_price=1000, min_hist=252):
+def universe(d, min_val=1e9, min_price=1000, min_hist=252, top=None):
     """시점별 종목군: 보통주(스팩·리츠 제외), 상장 후 min_hist 거래일 경과, 20일 평균 거래대금 하한, 주가 하한, 당일 거래 있음"""
     meta = d["meta"]
     common = np.array([k.endswith("0") for k in d["c"].columns])
@@ -27,6 +27,9 @@ def universe(d, min_val=1e9, min_price=1000, min_hist=252):
     liq = d["val"].rolling(20, min_periods=15).mean() >= min_val
     U = d["listed"] & hist & liq & (d["raw_c"] >= min_price) & (d["val"] > 0)
     U.loc[:, ~common | bad] = False
+    if top:                                   # 시점별 시가총액 상위 top개 (전일 시총 기준)
+        m = d["mcap"].shift(1).where(U)
+        U = U & (m.rank(axis=1, ascending=False, method="first") <= top)
     return U
 
 

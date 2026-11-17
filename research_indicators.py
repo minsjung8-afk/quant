@@ -1,11 +1,12 @@
 """지표별 단독 검증: 종목군 안에서 지표 순위 상위 20% vs 전체/하위 20%의 이후 수익률.
-사용: python3 research_indicators.py 2013-07-01 2018-12-31   (개발 구간만 본다)"""
+사용: python3 research_indicators.py 2013-07-01 2018-12-31 [시총 상위 N]   (개발 구간만 본다)"""
 import sys
 import numpy as np, pandas as pd
 from panel import load, universe, indicators
 
 A, B = sys.argv[1], sys.argv[2]
-d = load(); U = universe(d); ind = indicators(d); I = d["I"]
+TOP = int(sys.argv[3]) if len(sys.argv) > 3 else None
+d = load(); U = universe(d, top=TOP); ind = indicators(d); I = d["I"]
 dates = I.index
 rows = []
 for h in (5, 21):
@@ -16,7 +17,7 @@ for h in (5, 21):
         top_ex, spread, n = [], [], []
         for i in pos:
             m = U.values[i] & np.isfinite(s[i]) & np.isfinite(fwd[i])
-            if m.sum() < 100: continue
+            if m.sum() < (100 if not TOP else TOP * 0.7): continue
             x, y = s[i][m], fwd[i][m]
             q = np.quantile(x, [0.2, 0.8])
             t, b = y[x >= q[1]].mean(), y[x <= q[0]].mean()
@@ -32,4 +33,4 @@ pd.set_option("display.width", 250); pd.set_option("display.float_format", "{:.3
 for h in (5, 21):
     print(f"\n=== 보유 {h}거래일 ({A} ~ {B}) ===")
     print(out[out.보유일 == h].drop(columns="보유일").sort_values("t", ascending=False).to_string(index=False))
-out.to_csv(f"results_indicators_{A[:4]}_{B[:4]}.csv", index=False)
+out.to_csv(f"results_indicators_{A[:4]}_{B[:4]}_{TOP or 'all'}.csv", index=False)
