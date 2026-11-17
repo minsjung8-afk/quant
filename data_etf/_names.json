@@ -1,0 +1,98 @@
+{
+ "069500": {
+  "expected": "국내 대형주 (코스피200)",
+  "naver_name": "KODEX 200"
+ },
+ "229200": {
+  "expected": "국내 코스닥150",
+  "naver_name": "KODEX 코스닥150"
+ },
+ "133690": {
+  "expected": "미국 나스닥100 (환노출)",
+  "naver_name": "TIGER 미국나스닥100"
+ },
+ "143850": {
+  "expected": "미국 S&P500 선물 (환헤지)",
+  "naver_name": "TIGER 미국S&P500선물(H)"
+ },
+ "360750": {
+  "expected": "미국 S&P500 (환노출)",
+  "naver_name": "TIGER 미국S&P500"
+ },
+ "379800": {
+  "expected": "미국 S&P500 TR",
+  "naver_name": "KODEX 미국S&P500"
+ },
+ "379810": {
+  "expected": "미국 나스닥100 TR",
+  "naver_name": "KODEX 미국나스닥100"
+ },
+ "251350": {
+  "expected": "선진국 MSCI World",
+  "naver_name": "KODEX MSCI선진국"
+ },
+ "195930": {
+  "expected": "유럽 유로스탁스50 (H)",
+  "naver_name": "TIGER 유로스탁스50(합성 H)"
+ },
+ "241180": {
+  "expected": "일본 니케이225",
+  "naver_name": "TIGER 일본니케이225"
+ },
+ "192090": {
+  "expected": "중국 CSI300",
+  "naver_name": "TIGER 차이나CSI300"
+ },
+ "195980": {
+  "expected": "신흥국 MSCI (H)",
+  "naver_name": "PLUS 신흥국MSCI(합성 H)"
+ },
+ "114260": {
+  "expected": "국고채 3년",
+  "naver_name": "KODEX 국고채3년"
+ },
+ "148070": {
+  "expected": "국고채 10년",
+  "naver_name": "KIWOOM 국고채10년"
+ },
+ "153130": {
+  "expected": "단기채권 (현금 대용)",
+  "naver_name": "KODEX 단기채권"
+ },
+ "305080": {
+  "expected": "미국채 10년 선물",
+  "naver_name": "TIGER 미국채10년선물"
+ },
+ "304660": {
+  "expected": "미국채 30년 선물 (H)",
+  "naver_name": "KODEX 미국30년국채울트라선물(H)"
+ },
+ "132030": {
+  "expected": "금 선물 (H)",
+  "naver_name": "KODEX 골드선물(H)"
+ },
+ "411060": {
+  "expected": "금 현물",
+  "naver_name": "ACE KRX금현물"
+ },
+ "130680": {
+  "expected": "원유 선물 (H)",
+  "naver_name": "TIGER 원유선물Enhanced(H)"
+ },
+ "261240": {
+  "expected": "미국 달러 선물",
+  "naver_name": "KODEX 미국달러선물"
+ },
+ "182480": {
+  "expected": "미국 리츠 (H)",
+  "naver_name": "TIGER 미국MSCI리츠(합성 H)"
+ },
+ "091160": {
+  "expected": "국내 반도체",
+  "naver_name": "KODEX 반도체"
+ },
+ "091170": {
+  "expected": "국내 은행",
+  "naver_name": "KODEX 은행"
+ }
+}
