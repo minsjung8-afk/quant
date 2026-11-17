@@ -20,13 +20,18 @@ jobs:
       - uses: actions/checkout@v4
       - name: 국내 상장 ETF
         run: python3 fetch_etf.py
+      - name: 벤치마크 지수
+        continue-on-error: true
+        run: python3 fetch_index.py
+      - name: 신호·대시보드 생성
+        run: python3 signal_etf.py
       - name: 저장소에 반영
         if: always()
         run: |
           git config user.name "quant-bot"
           git config user.email "quant-bot@users.noreply.github.com"
-          git add data_etf 2>/dev/null || true
+          git add data_etf data_index site 2>/dev/null || true
           if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
-          git commit -q -m "data: ETF $(date -u +%Y-%m-%d)"
+          git commit -q -m "data: ETF·신호 $(date -u +%Y-%m-%d)"
           git pull -q --rebase origin "${GITHUB_REF_NAME}" || true
           git push origin "HEAD:${GITHUB_REF_NAME}"

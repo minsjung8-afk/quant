@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>퀀트 신호 — ETF 전략 B (관찰 단계)</title>
+<style>
+:root{--navy:#14213d;--gold:#b08d3c;--bg:#f5f4f0;--card:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--line:#e3e1da;
+--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--good:#1a7f4b;--bad:#c0392b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:15px;line-height:1.5}
+header{background:var(--navy);color:#fff;padding:18px 20px;border-bottom:3px solid var(--gold)}
+header h1{margin:0;font-size:19px;font-weight:700}
+header p{margin:4px 0 0;font-size:13px;color:#cfd3dc}
+main{max-width:980px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:14px}
+h2{font-size:15px;margin:0 0 10px;color:var(--navy)}
+.note{font-size:12.5px;color:var(--ink2)}
+.warn{border-left:4px solid var(--gold);background:#fbf7ea}
+.hold{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.hold div{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.hold b{display:block;font-size:15px}.hold span{font-size:12.5px;color:var(--ink2)}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{font-size:12.5px;color:var(--ink2);font-weight:600}
+th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+td:nth-child(2){white-space:normal}
+.tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:600}
+.tag.on{background:#e5eefb;color:#184f95}.tag.off{background:#eeede8;color:var(--ink2)}
+.tag.buy{background:#e3f4ea;color:var(--good)}.tag.sell{background:#fbe6e3;color:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:10px}
+.stats div{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.stats i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
+.stats b{font-size:16px}.stats small{display:block;color:var(--ink2);font-size:12px}
+svg{width:100%;height:auto;display:block}
+.scroll{overflow-x:auto}
+#tip{position:absolute;pointer-events:none;background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);display:none;white-space:nowrap}
+</style>
+</head>
+<body>
+<header><h1>퀀트 신호 — ETF 전략 B</h1><p id="sub"></p></header>
+<main>
+<div class="card warn"><b>관찰 단계입니다.</b> 이 전략은 2023년 이후 구간에서 코스피를 넘지 못해 "지수 초과" 검증에서 탈락했고, 목표를 "코스피보다 덜 잃으면서 비슷하게 벌기"로 바꾼 뒤 가상 기록으로 다시 확인하는 중입니다. 아래 신호는 매매 권유가 아닙니다.</div>
+<div class="card"><h2>이번 달 보유 (공식 신호)</h2><div class="hold" id="hold"></div><p class="note" id="holdnote"></p></div>
+<div class="card"><h2>자산별 12개월 수익률 순위</h2><div class="scroll"><table id="tbl"></table></div><p class="note" id="pend"></p></div>
+<div class="card"><h2>관찰 기록 (가상 운용)</h2><div class="stats" id="obsstats"></div><p class="note" id="obsnote"></p></div>
+<div class="card" style="position:relative"><h2>최근 3년 누적 (백테스트, 시작 = 1.0)</h2><div id="chart"></div><div id="tip"></div><div class="stats" id="y3stats"></div>
+<p class="note" id="allnote"></p></div>
+<div class="card"><h2>교체 내역 (최근 12회)</h2><div class="scroll"><table id="hist"></table></div></div>
+<p class="note">규칙: 매월 마지막 거래일 종가 기준 12개월 수익률 상위 3개를 3분의 1씩 보유하고 다음 거래일에 교체. 비용은 편도 0.115% 가정. 분배금과 세금은 반영하지 않음. 지수는 가격지수.</p>
+</main>
+<script>
+const D=/*__DATA__*/null;
+const pct=(v,d=1)=>v==null?'–':(v>=0?'+':'')+(v*100).toFixed(d)+'%';
+const col={'전략 B':'var(--s1)','6개 자산 동일비중':'var(--s2)','코스피':'var(--s3)','코스피200':'var(--s4)'};
+const $=id=>document.getElementById(id);
+$('sub').textContent=`기준일 ${D.asof} 종가 · 관찰 시작 ${D.obs_start}`;
+$('hold').innerHTML=D.hold.map(h=>`<div><b>${h.name}</b><span>${h.label} · ${h.code} · 비중 1/3</span></div>`).join('');
+const ls=D.last_signal;
+$('holdnote').textContent=ls?`직전 판정일 ${ls.signal_date}, 교체일 ${ls.trade_date}. 다음 판정은 ${D.next_signal_month.replace('-','년 ')}월 마지막 거래일 종가입니다.`:'';
+$('tbl').innerHTML='<tr><th>순위</th><th>자산</th><th>종가</th><th>12개월 수익률</th><th>보유</th></tr>'+D.table.map(r=>`<tr><td>${r.rank}</td><td><b>${r.name}</b><br><span class="note">${r.label}</span></td><td>${r.close.toLocaleString()}</td><td>${pct(r.mom12)}</td><td><span class="tag ${r.held?'on':'off'}">${r.held?'보유 중':'미보유'}</span></td></tr>`).join('');
+const pc=D.pending_change,nm=c=>D.names[c];
+$('pend').innerHTML=(pc.buy.length||pc.sell.length)?`지금 순위가 월말까지 유지되면 교체 예정: ${pc.sell.map(c=>`<span class="tag sell">매도 ${nm(c)}</span>`).join(' ')} ${pc.buy.map(c=>`<span class="tag buy">매수 ${nm(c)}</span>`).join(' ')}`:'지금 순위가 월말까지 유지되면 교체 없이 그대로 보유합니다.';
+function stats(el,st,useCagr){el.innerHTML=Object.entries(st).map(([k,v])=>`<div><i style="background:${col[k]}"></i>${k}<br><b>${pct(useCagr&&v.cagr!=null?v.cagr:v.ret)}</b><small>${useCagr&&v.cagr!=null?'연환산':'누적'} · 최대 낙폭 ${pct(v.mdd)}</small></div>`).join('')}
+stats($('obsstats'),D.obs.stats,false);
+$('obsnote').textContent=`관찰 ${D.obs.dates.length-1}거래일째 (${D.obs_start} 종가 = 기준). 실제 매매 없이 규칙대로 운용했다고 가정한 수익입니다. 최소 3개월은 판단을 미룹니다.`;
+stats($('y3stats'),D.y3.stats,true);
+const A=D.all.stats;$('allnote').textContent=`전체 기간(${D.all.from}~): 전략 B 연 ${pct(A['전략 B'].cagr)} / 낙폭 ${pct(A['전략 B'].mdd)}, 코스피 연 ${pct(A['코스피'].cagr)} / 낙폭 ${pct(A['코스피'].mdd)}. 과거 성과이며 자산 선택에 사후 판단이 섞여 있습니다.`;
+(function(){const S=D.y3.series,dates=D.y3.dates,W=920,H=300,m={l:44,r:120,t:10,b:26};
+const all=Object.values(S).flat(),lo=Math.min(...all),hi=Math.max(...all),n=dates.length;
+const x=i=>m.l+(W-m.l-m.r)*i/(n-1),y=v=>m.t+(H-m.t-m.b)*(1-(v-lo)/(hi-lo));
+let g='';const ticks=5;for(let t=0;t<=ticks;t++){const v=lo+(hi-lo)*t/ticks;g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y(v)}" y2="${y(v)}" stroke="#e3e1da"/><text x="${m.l-6}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="#52514e">${v.toFixed(1)}</text>`}
+[0,Math.floor(n/3),Math.floor(2*n/3),n-1].forEach(i=>g+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle" font-size="11" fill="#52514e">${dates[i].slice(0,7)}</text>`);
+const ends=Object.entries(S).map(([k,v])=>({k,yy:y(v[n-1])})).sort((a,b)=>a.yy-b.yy);for(let i=1;i<ends.length;i++)if(ends[i].yy-ends[i-1].yy<14)ends[i].yy=ends[i-1].yy+14;
+Object.entries(S).forEach(([k,v])=>{g+=`<path d="${v.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(p).toFixed(1)).join('')}" fill="none" stroke="${col[k]}" stroke-width="${k==='전략 B'?2.6:2}" stroke-linejoin="round"/>`});
+ends.forEach(e=>g+=`<circle cx="${W-m.r+8}" cy="${e.yy-4}" r="4" fill="${col[e.k]}"/><text x="${W-m.r+16}" y="${e.yy}" font-size="12" fill="#0b0b0b">${e.k}</text>`);
+g+=`<line id="xh" y1="${m.t}" y2="${H-m.b}" stroke="#52514e" stroke-dasharray="3 3" visibility="hidden"/>`;
+$('chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="최근 3년 누적 수익 비교">${g}<rect x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}" fill="transparent" id="hit"/></svg>`;
+const svg=$('chart').querySelector('svg'),tip=$('tip'),xh=svg.querySelector('#xh');
+svg.querySelector('#hit').addEventListener('pointermove',e=>{const r=svg.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*W;let i=Math.round((px-m.l)/(W-m.l-m.r)*(n-1));i=Math.max(0,Math.min(n-1,i));
+xh.setAttribute('x1',x(i));xh.setAttribute('x2',x(i));xh.setAttribute('visibility','visible');
+tip.innerHTML=`<b>${dates[i]}</b><br>`+Object.entries(S).map(([k,v])=>`<i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${col[k]};margin-right:5px"></i>${k} ${v[i].toFixed(2)}`).join('<br>');
+const cr=$('chart').parentElement.getBoundingClientRect();tip.style.display='block';tip.style.left=Math.min(e.clientX-cr.left+12,cr.width-190)+'px';tip.style.top=(e.clientY-cr.top+12)+'px'});
+svg.querySelector('#hit').addEventListener('pointerleave',()=>{tip.style.display='none';xh.setAttribute('visibility','hidden')});})();
+$('hist').innerHTML='<tr><th>판정일</th><th>보유 자산</th><th>교체일</th><th>변경</th></tr>'+D.history.map(h=>`<tr><td>${h.signal_date}</td><td>${h.hold.map(nm).join(', ')}</td><td>${h.trade_date}</td><td style="white-space:normal">${h.sell.map(c=>`<span class="tag sell">매도 ${nm(c)}</span>`).join(' ')} ${h.buy.map(c=>`<span class="tag buy">매수 ${nm(c)}</span>`).join(' ')}${(!h.buy.length&&!h.sell.length)?'<span class="note">변경 없음</span>':''}</td></tr>`).join('');
+</script>
+</body>
+</html>
