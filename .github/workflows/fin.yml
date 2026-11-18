@@ -1,34 +1,32 @@
-name: dart
+name: fin
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "5 21 * * 6"     # 한국시간 일요일 06:05 — 주 1회 최신 보고서 갱신
+    - cron: "9 21 * * 6"     # 한국시간 일요일 06:09 — 주 1회 (DART 호출 없음, 본인 사이트에서만 읽음)
 
 permissions:
   contents: write
 
 concurrency:
-  group: dart
+  group: fin
   cancel-in-progress: false
 
 jobs:
-  dart:
+  fin:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - name: DART 재무 이력
-        env:
-          DART_API_KEY: ${{ secrets.DART_API_KEY }}
-        run: python3 fetch_dart.py
+      - name: 심사참고 DB 사이트에서 재무 요약 수집
+        run: python3 fetch_fin.py
       - name: 저장소에 반영
         if: always()
         run: |
           git config user.name "quant-bot"
           git config user.email "quant-bot@users.noreply.github.com"
-          git add raw_dart 2>/dev/null || true
+          git add data_fin 2>/dev/null || true
           if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
-          git commit -q -m "data: DART 재무 $(date -u +%Y-%m-%d)"
+          git commit -q -m "data: 재무 요약 $(date -u +%Y-%m-%d)"
           git pull -q --rebase origin "${GITHUB_REF_NAME}" || true
           git push origin "HEAD:${GITHUB_REF_NAME}"
